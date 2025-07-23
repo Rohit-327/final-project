@@ -1,0 +1,63 @@
+pipeline {
+  agent any
+
+  environment {
+    TF_VAR_region = "us-east-1"
+  }
+
+  stages {
+    stage('Clone Git Repo') {
+      steps {
+        git branch: 'main', url: 'https://github.com/your-username/terraform-app.git'
+      }
+    }
+
+    stage('Terraform Init') {
+      steps {
+        sh 'terraform init'
+      }
+    }
+
+    stage('Terraform Validate') {
+      steps {
+        sh 'terraform validate'
+      }
+    }
+
+    stage('Terraform Format Check') {
+      steps {
+        sh 'terraform fmt -check'
+      }
+    }
+
+    stage('Terraform Plan') {
+      steps {
+        sh 'terraform plan -var-file=dev.tfvars -out=tfplan.out'
+      }
+    }
+
+    stage('Terraform Apply (with Approval)') {
+      steps {
+        script {
+          def userInput = input message: 'Do you want to apply Terraform?', parameters: [
+            [$class: 'BooleanParameterDefinition', defaultValue: false, description: 'Apply infrastructure changes?', name: 'Apply']
+          ]
+          if (userInput) {
+            sh 'terraform apply -auto-approve tfplan.out'
+          } else {
+            echo 'Apply skipped by user.'
+          }
+        }
+      }
+    }
+  }
+
+  post {
+    success {
+      echo '✅ Pipeline completed successfully!'
+    }
+    failure {
+      echo '❌ Pipeline failed!'
+    }
+  }
+}
