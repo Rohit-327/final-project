@@ -2,8 +2,8 @@ pipeline {
   agent { label 'terraform' } // 🖥️ Run on passive Terraform node
  
   environment {
-    TF_DIR = 'Application/sample_ec2' // path to your Terraform code
-    TF_VARS = 'Application/sample_ec2/tfvars/dev.tfvars'
+    TF_DIR = 'Application' // path to your Terraform code
+    TF_VARS = 'Application/tfvars/dev.tfvars'
   }
  
   stages {
